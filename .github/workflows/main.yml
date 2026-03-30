@@ -10,7 +10,6 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
 
-    # ── Serviço MySQL via Docker ──────────────────────────────────────────────
     services:
       mysql:
         image: mysql:8.0
@@ -25,7 +24,6 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
-    # ── Variáveis de ambiente para os scripts Python ──────────────────────────
     env:
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
@@ -34,29 +32,29 @@ jobs:
       DB_NAME: food_codes
 
     steps:
-
-      # 1. Checkout do repositório
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      # 2. Configurar Python 3.11
       - name: Configurar Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. Instalar dependências Python
       - name: Instalar dependências Python
         run: |
           pip install --upgrade pip
           pip install mysql-connector-python pytest
 
-      # 4. Aguardar MySQL estar pronto
       - name: Instalar cliente MySQL
-        run: sudo apt-get install -y mysql-client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Aguardar MySQL ficar disponível
+        run: |
           echo "Aguardando MySQL..."
           for i in {1..30}; do
-            if mysql -h 127.0.0.1 -u root -proot -e "SELECT 1" &>/dev/null; then
+            if mysqladmin ping -h 127.0.0.1 -u root -proot --silent; then
               echo "MySQL disponível!"
               break
             fi
@@ -64,23 +62,19 @@ jobs:
             sleep 3
           done
 
-      # 5. Executar script SQL (criação do banco, tabela e dados iniciais)
       - name: Criar banco de dados e tabela (setup.sql)
         run: |
           mysql -h 127.0.0.1 -u root -proot < setup.sql
           echo "Banco de dados e tabela criados com sucesso."
 
-      # 6. Verificar tabela e dados iniciais
       - name: Verificar dados iniciais no banco
         run: |
           mysql -h 127.0.0.1 -u root -proot food_codes \
             -e "SELECT * FROM codigos_sequenciais ORDER BY id;"
 
-      # 7. Executar testes automatizados com pytest
       - name: Executar testes com pytest
         run: pytest test_code_generator.py -v --tb=short
 
-      # 8. Verificar dados gerados pelos testes
       - name: Consultar dados finais no banco (evidência)
         if: always()
         run: |
