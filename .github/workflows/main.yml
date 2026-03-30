@@ -52,8 +52,8 @@ jobs:
           pip install mysql-connector-python pytest
 
       # 4. Aguardar MySQL estar pronto
-      - name: Aguardar MySQL ficar disponível
-        run: |
+      - name: Instalar cliente MySQL
+        run: sudo apt-get install -y mysql-client
           echo "Aguardando MySQL..."
           for i in {1..30}; do
             if mysql -h 127.0.0.1 -u root -proot -e "SELECT 1" &>/dev/null; then
