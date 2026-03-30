@@ -9,7 +9,6 @@ CREATE DATABASE IF NOT EXISTS food_codes
 
 USE food_codes;
 
--- Tabela principal
 CREATE TABLE IF NOT EXISTS codigos_sequenciais (
     id            INT           NOT NULL AUTO_INCREMENT,
     codigo        VARCHAR(10)   NOT NULL,
@@ -19,11 +18,9 @@ CREATE TABLE IF NOT EXISTS codigos_sequenciais (
     Pais          CHAR(2)       NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_codigo (codigo),
-    -- garante que não existam dois registros com mesmo grupo+sec+pais
     UNIQUE KEY uq_grupo_sec_pais (Grupo, sec, Pais)
 ) ENGINE=InnoDB;
 
--- ── Dados iniciais de referência ──────────────────────────────────────────────
 INSERT INTO codigos_sequenciais (codigo, sec, Grupo, Tipo_Alimento, Pais) VALUES
   ('BRC0001A', 1, 'C', 'A', 'BR'),
   ('BRD0001I', 1, 'D', 'I', 'BR'),
